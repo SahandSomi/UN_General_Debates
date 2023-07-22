@@ -148,6 +148,8 @@ def Trend(mode,df_1):
     with st.form("event_form"):
         # Text input for multiple words
         user_input = st.text_area("Enter multiple keywords to see trend:", "")
+        # Convert the input to lowercase
+        user_input = user_input.lower()
         event_name = st.text_input("Enter the name of the event:")
         event_year = st.number_input("Enter the year of the event:", min_value=1900, max_value=2100)
 
