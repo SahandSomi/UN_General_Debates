@@ -182,7 +182,9 @@ def Trend(mode,df_1):
             if events[0]['event'] != "":
                 annotations = []
                 for event in events:
-                    y_data = max([answer[i][event['year']] for i in answer.columns])
+                    y_data =[answer[i][event['year']] for i in answer.columns]
+                    y_data.append(0)
+                    y_data = max(y_data)
                     annotation = dict(
                         x=event['year'], y=y_data,
                         xref="x", yref="y",
