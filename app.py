@@ -3,6 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import nltk
+from collections import Counter
+import plotly.graph_objects as go
 
 nltk.download("punkt")
 nltk.download("stopwords")
@@ -21,7 +23,7 @@ from gensim.models import LdaModel
 from gensim.models.coherencemodel import CoherenceModel
 import pyLDAvis.gensim_models
 from streamlit import components
-
+from copy import deepcopy
 
 
 @st.cache_data 
@@ -78,8 +80,8 @@ def home(mode):
     st.markdown("In today's world, understanding the speeches of world leaders has become more critical than ever. These addresses shape policies, influence global affairs, and impact millions of lives. Harnessing the power of Natural Language Processing (NLP), an advanced AI technique, offers a transformative use case in comprehending and extracting insights from world leaders' speeches. By employing NLP's capabilities, we can unravel the nuances of language, sentiments, and key themes, providing invaluable knowledge for diplomacy, policymaking, and international relations.")
 
 
-def Leader(mode,df):
-    df = df
+def Leader(mode,df_1):
+    df = deepcopy(df_1)
 
     # List of speaker and their posts
     Country = df["Country"].unique()
@@ -132,16 +134,89 @@ def Leader(mode,df):
         st.subheader("Topic Visualization:")
         components.v1.html(html_string, width=800, height=800, scrolling=True)
 
+def Trend(mode,df_1):
 
-def Topics(mode):
-    pass
+    df = deepcopy(df_1)
 
-def Trend(mode):
-    pass
+    st.title("Multiple Word Input and List Saving")
+    
+
+    # Initialize an empty list to store events
+    events = []
+
+    # Create a form to add events
+    with st.form("event_form"):
+        # Text input for multiple words
+        user_input = st.text_area("Enter multiple keywords to see trend:", "")
+        event_name = st.text_input("Enter the name of the event:")
+        event_year = st.number_input("Enter the year of the event:", min_value=1900, max_value=2100)
+
+        # If the "Add Event" button is clicked, add the event to the list
+        if st.form_submit_button(label="submit"):
+            # Add the event details to the list as a dictionary
+            event = {'event': event_name, 'year': event_year}
+            events.append(event)
+
+            # Convert the user input to a list of words
+            keyword_list = user_input.split("\n")
+
+            for index, row in df.iterrows():
+                key_dict = extract_keyword_frequency(row['text'],keyword_list)
+                for key, value in key_dict.items():
+                    df.at[index, key] = value
+
+            # To generate a DataFrame for the results and eliminate unnecessary columns, we will create a new DataFrame by dropping the columns that are not required
+            df = df.drop(['text','session','code','Country','Name of Person Speaking'], axis=1)
+            # Group by each year
+            group_by_year = df.groupby('year')
+            # Getting sum of each keywords
+            answer = group_by_year.sum()
+
+            # Create a line plot with multiple lines using Plotly
+            fig = go.Figure()
+            for i in answer.columns:
+                fig.add_trace(go.Scatter(x=answer.index, y=answer[i], name=i))
+
+            # Automatically generate annotations for events by year
+            annotations = []
+            if events[0]['event'] != "":
+                annotations = []
+                for event in events:
+                    y_data = max([answer[i][event['year']] for i in answer.columns])
+                    annotation = dict(
+                        x=event['year'], y=y_data,
+                        xref="x", yref="y",
+                        text=f"{event['event']} ({y_data})",
+                        showarrow=True,
+                        arrowhead=2,
+                        ax=0,
+                        ay=-100
+                    )
+                    annotations.append(annotation)
+
+                # Customize the plot layout
+                fig.update_layout(xaxis_title='Year',
+                                yaxis_title='Sum for wordss',
+                                showlegend=True,
+                                annotations=annotations)
+                
+            else:
+                # Customize the plot layout
+                fig.update_layout(xaxis_title='Year',
+                                yaxis_title='Sum for wordss',
+                                showlegend=True)
+
+            st.plotly_chart(fig)
+
+def extract_keyword_frequency(text,keyword_list):
+    tokens = nltk.word_tokenize(text)
+    keyword_counts = Counter(tokens)
+    keyword_frequency = {keyword: keyword_counts[keyword] for keyword in keyword_list if keyword in keyword_counts}
+    return keyword_frequency
 
 def main():
     main_mode = st.sidebar.selectbox('Select Menu',
-        ['Home', 'Leader', "Topics","Words Trend"]
+        ['Home', 'Leader',"Words Trend"]
     )
     df = load_data()
 
@@ -150,11 +225,8 @@ def main():
     elif main_mode == 'Leader':
         Leader(main_mode,df)
 
-    elif main_mode == 'Topics':
-        Topics(main_mode)
-
     elif main_mode == 'Words Trend':
-        Trend(main_mode)
+        Trend(main_mode, df)
    
 if __name__ == '__main__':
     main()
