@@ -1,0 +1,15 @@
+name: spartan-cm-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - pre-commit
+  - numpy
+  - pandas
+  - pytest
+  - openpyxl
+  - pyyaml
+  - pip
+  - pip:
+    - -r requirements.txt
