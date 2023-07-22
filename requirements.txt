@@ -1,4 +1,7 @@
 streamlit
+numpy
+pandas
+openpyxl
 fuzzywuzzy==0.18.0
 gensim==4.3.1
 matplotlib==3.7.2
