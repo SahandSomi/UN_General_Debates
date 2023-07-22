@@ -3,11 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import nltk
-@st.cache_data
+
 nltk.download("punkt")
-@st.cache_data
 nltk.download("stopwords")
-@st.cache_data
 nltk.download('wordnet')
 
 from nltk.corpus import stopwords
