@@ -7,7 +7,6 @@ dependencies:
   - pre-commit
   - numpy
   - pandas
-  - pytest
   - openpyxl
   - pyyaml
   - pip
