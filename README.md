@@ -53,6 +53,9 @@ pip install -r requirements.txt
 ```bash
 streamlit run app.py
 ```
+or
+
+https://ungeneraldebates-2vjt9tdk5gm.streamlit.app/
 
 5. Access the application in your web browser by visiting `http://localhost:8501`.
 
